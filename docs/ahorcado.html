@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ahorcado - Tipos de Investigación</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hangman-drawing {
+            font-family: monospace;
+            font-size: 24px;
+            line-height: 1.2;
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            white-space: pre-line;
+            border: 3px solid #e2e8f0;
+        }
+        
+        .word-display {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 10px;
+            margin: 30px 0;
+            color: #2d3748;
+            text-transform: uppercase;
+        }
+        
+        .alphabet {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin: 30px 0;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .letter-btn {
+            padding: 12px;
+            border: none;
+            background: #4299e1;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .letter-btn:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .letter-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .letter-btn.wrong {
+            background: #e53e3e;
+        }
+        
+        .letter-btn.correct {
+            background: #38a169;
+        }
+        
+        .hint {
+            background: #e6fffa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #38b2ac;
+            font-style: italic;
+            color: #2d3748;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .errors {
+            color: #e53e3e;
+        }
+        
+        .score {
+            color: #38a169;
+        }
+        
+        .game-over {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .game-won {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .new-game-btn {
+            background: #805ad5;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .new-game-btn:hover {
+            background: #6b46c1;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        
+        .definition {
+            background: #f0fff4;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #68d391;
+            font-size: 16px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎯 Ahorcado - Tipos de Investigación</h1>
+        
+        <div class="game-info">
+            <div class="errors">Errores: <span id="errorCount">0</span>/6</div>
+            <div class="score">Puntuación: <span id="score">0</span></div>
+        </div>
+        
+        <div class="hangman-drawing" id="hangmanDrawing"></div>
+        
+        <div class="word-display" id="wordDisplay"></div>
+        
+        <div class="hint" id="hint"></div>
+        
+        <div class="alphabet" id="alphabet"></div>
+        
+        <div id="gameMessage"></div>
+        
+        <div id="definition" class="definition" style="display: none;"></div>
+        
+        <button class="new-game-btn" onclick="newGame()">🎮 Nueva Palabra</button>
+    </div>
+
+    <script>
+        const words = [
+            {
+                word: "EXPERIMENTAL",
+                hint: "Modifica factores de forma controlada para demostrar si una causa produce un efecto específico",
+                definition: "🧪 Investigación EXPERIMENTAL: Se basa en cambiar deliberadamente ciertos elementos mientras se mantienen otros constantes, permitiendo así determinar con precisión qué factor es responsable de los cambios observados. Es como hacer un experimento de laboratorio."
+            },
+            {
+                word: "CORRELACIONAL",
+                hint: "Mide cómo se comportan juntas diferentes características, sin modificar nada",
+                definition: "📊 Investigación CORRELACIONAL: Observa si cuando una característica aumenta, otra también lo hace (o disminuye). Por ejemplo, estudiar si a mayor tiempo de estudio corresponden mejores calificaciones, sin intervenir en el proceso de aprendizaje."
+            },
+            {
+                word: "DESCRIPTIVA",
+                hint: "Se limita a observar y documentar las características de algo tal como existe naturalmente",
+                definition: "📝 Investigación DESCRIPTIVA: Actúa como un fotógrafo o reportero que documenta la realidad sin modificarla. Su objetivo es crear un retrato detallado y preciso de una situación, grupo o fenómeno específico."
+            },
+            {
+                word: "EXPLORATORIA",
+                hint: "Se usa cuando sabemos muy poco sobre un tema y queremos obtener ideas iniciales",
+                definition: "🗺️ Investigación EXPLORATORIA: Funciona como un scout o explorador que va por primera vez a territorio desconocido. Su misión es mapear el terreno, identificar puntos importantes y preparar el camino para expediciones más detalladas."
+            }
+        ];
+
+        const hangmanParts = [
+            "",
+            "  +---+\n      |\n      |\n      |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n========="
+        ];
+
+        let currentWord = '';
+        let currentHint = '';
+        let currentDefinition = '';
+        let guessedWord = [];
+        let wrongGuesses = [];
+        let errors = 0;
+        let score = parseInt(localStorage.getItem('hangmanScore') || '0');
+        let gameOver = false;
+
+        function initGame() {
+            document.getElementById('score').textContent = score;
+            newGame();
+            createAlphabet();
+        }
+
+        function newGame() {
+            const randomIndex = Math.floor(Math.random() * words.length);
+            const selectedWord = words[randomIndex];
+            
+            currentWord = selectedWord.word;
+            currentHint = selectedWord.hint;
+            currentDefinition = selectedWord.definition;
+            
+            guessedWord = Array(currentWord.length).fill('_');
+            wrongGuesses = [];
+            errors = 0;
+            gameOver = false;
+            
+            updateDisplay();
+            document.getElementById('hint').textContent = `💡 Pista: ${currentHint}`;
+            document.getElementById('gameMessage').innerHTML = '';
+            document.getElementById('definition').style.display = 'none';
+            
+            // Reset alphabet buttons
+            const buttons = document.querySelectorAll('.letter-btn');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.className = 'letter-btn';
+            });
+        }
+
+        function createAlphabet() {
+            const alphabet = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+            const alphabetContainer = document.getElementById('alphabet');
+            
+            alphabetContainer.innerHTML = '';
+            
+            for (let letter of alphabet) {
+                const button = document.createElement('button');
+                button.className = 'letter-btn';
+                button.textContent = letter;
+                button.onclick = () => guessLetter(letter);
+                alphabetContainer.appendChild(button);
+            }
+        }
+
+        function guessLetter(letter) {
+            if (gameOver) return;
+            
+            const button = event.target;
+            button.disabled = true;
+            
+            if (currentWord.includes(letter)) {
+                // Correct guess
+                button.classList.add('correct');
+                for (let i = 0; i < currentWord.length; i++) {
+                    if (currentWord[i] === letter) {
+                        guessedWord[i] = letter;
+                    }
+                }
+                
+                if (!guessedWord.includes('_')) {
+                    // Word completed!
+                    gameOver = true;
+                    score += 10;
+                    localStorage.setItem('hangmanScore', score.toString());
+                    document.getElementById('score').textContent = score;
+                    document.getElementById('gameMessage').innerHTML = 
+                        '<div class="game-won">🎉 ¡Felicidades! Has adivinado la palabra correctamente 🎉</div>';
+                    document.getElementById('definition').innerHTML = currentDefinition;
+                    document.getElementById('definition').style.display = 'block';
+                }
+            } else {
+                // Wrong guess
+                button.classList.add('wrong');
+                wrongGuesses.push(letter);
+                errors++;
+                
+                if (errors >= 6) {
+                    gameOver = true;
+                    document.getElementById('gameMessage').innerHTML = 
+                        `<div class="game-over">💀 ¡Juego terminado! La palabra era: <strong>${currentWord}</strong></div>`;
+                    document.getElementById('definition').innerHTML = currentDefinition;
+                    document.getElementById('definition').style.display = 'block';
+                    
+                    // Disable all buttons
+                    const buttons = document.querySelectorAll('.letter-btn');
+                    buttons.forEach(btn => btn.disabled = true);
+                }
+            }
+            
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('wordDisplay').textContent = guessedWord.join(' ');
+            document.getElementById('hangmanDrawing').textContent = hangmanParts[errors];
+            document.getElementById('errorCount').textContent = errors;
+        }
+
+        // Initialize game when page loads
+        window.onload = initGame;
+    </script>
+</body>
+</html>
